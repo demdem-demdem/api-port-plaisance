@@ -1,11 +1,12 @@
-var express = require('express');
+var express = require("express");
 var router = express.Router();
 
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
-});
+const service = require("../services/users");
 
+const private = require("../middleware/private");
 
+router.post("/authenticate", service.authenticate);
+
+router.put("/add", private.checkJWT, service.add,);
 
 module.exports = router;
