@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+    <h1>Tableau de Bord - Port de Plaisance Russell</h1>
+    <nav>
+        <a href="/catway">Liste des Catways</a> | 
+        <a href="/catway/reservations/">Toutes les Réservations</a>
+    </nav>
+
+    <section>
+        <h2>Gestion des Utilisateurs</h2>
+        <form action="/users/add" method="POST">
+            <h3>Créer un Utilisateur</h3>
+            <input type="text" name="name" placeholder="Nom" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Mot de passe" required>
+            <button type="submit">Créer</button>
+        </form>
+        <form action="/users/delete" method="POST">
+            <h3>Supprimer un Utilisateur (ID)</h3>
+            <input type="text" name="id" placeholder="ID Utilisateur" required>
+            <button type="submit">Supprimer</button>
+        </form>
+    </section>
+
+    <section>
+        <h2>Gestion des Catways</h2>
+        <form action="/catway" method="POST">
+            <h3>Créer un Catway</h3>
+            <input type="number" name="catwayNumber" placeholder="Numéro" required>
+            <select name="type">
+                <option value="long">Long</option>
+                <option value="short">Short</option>
+            </select>
+            <input type="text" name="catwayState" placeholder="État" required>
+            <button type="submit">Ajouter</button>
+        </form>
+
+        <form id="details-catway">
+            <h3>Détails d'un Catway</h3>
+            <input type="text" id="catway-id" placeholder="ID Catway">
+            <button type="button" onclick="window.location.href='/catway/' + document.getElementById('catway-id').value">Voir Détails</button>
+        </form>
+    </section>
+
+    <section>
+        <h2>Gestion des Réservations</h2>
+        <form action="/catway/reservation/add" method="POST">
+            <h3>Enregistrer une Réservation</h3>
+            <input type="text" name="catwayId" placeholder="ID du Catway" required>
+            <input type="text" name="clientName" placeholder="Nom Client" required>
+            <input type="text" name="boatName" placeholder="Nom Bateau" required>
+            <label>Début:</label><input type="date" name="checkIn" required>
+            <label>Fin:</label><input type="date" name="checkOut" required>
+            <button type="submit">Réserver</button>
+        </form>
+
+        <form id="details-res">
+            <h3>Détails d'une Réservation</h3>
+            <input type="text" id="cat-id-res" placeholder="ID Catway">
+            <input type="text" id="res-id" placeholder="ID Réservation">
+            <button type="button" onclick="viewReservation()">Voir</button>
+        </form>
+    </section>
+
+    <script>
+        function viewReservation() {
+            const catId = document.getElementById('cat-id-res').value;
+            const resId = document.getElementById('res-id').value;
+            if(catId && resId) {
+                window.location.href = `/catway/${catId}/reservations/${resId}`;
+            } else {
+                alert("Veuillez remplir les deux IDs");
+            }
+        }
+    </script>
+</body>
+</html>

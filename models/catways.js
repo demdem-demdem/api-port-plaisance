@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const catwaySchema = mongoose.schema({
+const catwaySchema = mongoose.Schema({
   catwayNumber: { type: Number, required: true },
   type: { type: String, required: true },
   catwayState: { type: String, required: true },
