@@ -3,7 +3,11 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 exports.add = async (userData) => {
-  // The service only receives the data it needs
+  const existingUser = await User.findOne({ email: userData.email });
+  if (existingUser) {
+    throw new Error("email_already_exists");
+  }
+
   return await User.create(userData);
 };
 
