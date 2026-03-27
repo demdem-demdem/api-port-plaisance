@@ -57,4 +57,44 @@ router.post("/delete", privateMiddleware.checkJWT, async (req, res, next) => {
   }
 });
 
+router.get("/modify/:id", privateMiddleware.checkJWT, async (req, res, next) => {
+  try {
+    const user = await service.getById(req.params.id);
+    console.log(user);
+    if (req.accepts("html")) {
+      return res.render("modify_user", {
+        title: "Modifier l'utilisateur",
+        user: user
+      });
+    }
+    res.status(200).json(user);
+  } catch (err) {
+    if (req.accepts("html")) {
+      return res.redirect(`/dashboard?error=${encodeURIComponent("Utilisateur non trouvé.")}`);
+    }
+    next(err);
+  }
+});
+
+router.post("/update/:id", privateMiddleware.checkJWT, async (req, res, next) => {
+  try {
+    const updatedUser = await service.modify(req.params.id, req.body);
+    console.log('Woah', updatedUser);
+    if (req.accepts("html")) {
+      return res.redirect(
+        `/dashboard?success=L'utilisateur ${updatedUser.name} a été mis à jour.`
+      );
+    }
+    res.status(200).json(updatedUser);
+  } catch (err) {
+    if (req.accepts("html")) {
+      const msg = err.message === "email_already_exists" ? "Cet email est déjà utilisé." : "Erreur lors de la modification.";
+      return res.redirect(`/dashboard?error=${encodeURIComponent(msg)}`);
+    }
+    next(err);
+  }
+
+});
+
+
 module.exports = router;
