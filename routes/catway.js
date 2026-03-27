@@ -5,7 +5,7 @@ const reservationService = require("../services/reservations");
 const privateMiddleware = require("../middleware/private");
 
 // HYBRID ROUTES (The "Whatever" Section)
-// These handle the Browser/Dashboard and the API because I don't want to 
+// These handle the Browser/Dashboard and the API because I don't want to
 // write the same logic twice. Content negotiation is a thing.
 
 // GET /catways - Listing the elite's boat parking spots
@@ -42,21 +42,32 @@ router.get(
 );
 
 // POST /catways/reservations/add - Dashboard specific helper
-router.post("/reservations/add", privateMiddleware.checkJWT, async (req, res, next) => {
-  try {
-    const { catwayId, clientName, boatName, checkIn, checkOut } = req.body;
-    const reservation = await reservationService.createReservation(catwayId, { clientName, boatName, checkIn, checkOut });
-    if (req.accepts("html")) {
-      return res.redirect("/dashboard?success=La réservation a été ajoutée.");
+router.post(
+  "/reservations/add",
+  privateMiddleware.checkJWT,
+  async (req, res, next) => {
+    try {
+      const { catwayId, clientName, boatName, checkIn, checkOut } = req.body;
+      const reservation = await reservationService.createReservation(catwayId, {
+        clientName,
+        boatName,
+        checkIn,
+        checkOut,
+      });
+      if (req.accepts("html")) {
+        return res.redirect("/dashboard?success=La réservation a été ajoutée.");
+      }
+      res.status(201).json(reservation);
+    } catch (err) {
+      if (req.accepts("html")) {
+        return res.redirect(
+          `/dashboard?error=${encodeURIComponent(err.message)}`,
+        );
+      }
+      next(err);
     }
-    res.status(201).json(reservation);
-  } catch (err) {
-    if (req.accepts("html")) {
-      return res.redirect(`/dashboard?error=${encodeURIComponent(err.message)}`);
-    }
-    next(err);
-  }
-});
+  },
+);
 
 // GET /catways/:id - Inspecting a single luxury pier
 router.get("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
@@ -71,6 +82,49 @@ router.get("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
   }
 });
 
+router.get(
+  "/modify/:id",
+  privateMiddleware.checkJWT,
+  async (req, res, next) => {
+    try {
+      const catway = await catwayService.getCatwayById(req.params.id);
+      console.log(catway);
+      if (req.accepts("html")) {
+        return res.render("modify_catway", {
+          title: "Modifier le catway",
+          catway: catway,
+        });
+      }
+      res.status(200).json(catway);
+    } catch (err) {
+      if (req.accepts("html")) {
+        return res.redirect(
+          `/dashboard?error=${encodeURIComponent("Catway non trouvé.")}`,
+        );
+      }
+      next(err);
+    }
+  },
+);
+
+router.post('/update/:id', privateMiddleware.checkJWT, async (req, res, next) => {
+  try {
+    const updatedCatway = await catwayService.updateCatway(req.params.id, req.body);
+    if (req.accepts("html")) {
+      return res.redirect(
+        `/dashboard?success=Le catway ${updatedCatway.catwayNumber} a été mis à jour.`
+      );
+    }
+    res.status(200).json(updatedCatway);
+  } catch (err) {
+    if (req.accepts("html")) {
+      return res.redirect(`/dashboard?error=${encodeURIComponent(err.message)}`);
+    }
+    next(err);
+  }
+});
+
+
 // POST /catways - Creating more infrastructure for the 1%
 router.post("/", privateMiddleware.checkJWT, async (req, res, next) => {
   try {
@@ -81,13 +135,15 @@ router.post("/", privateMiddleware.checkJWT, async (req, res, next) => {
     res.status(201).json(catway);
   } catch (err) {
     if (req.accepts("html")) {
-      return res.redirect(`/dashboard?error=${encodeURIComponent(err.message)}`);
+      return res.redirect(
+        `/dashboard?error=${encodeURIComponent(err.message)}`,
+      );
     }
     next(err);
   }
 });
 
-// POST /catways/delete - Because HTML forms are stuck in the 90s 
+// POST /catways/delete - Because HTML forms are stuck in the 90s
 // and don't know what a DELETE request is.
 router.post("/delete", privateMiddleware.checkJWT, async (req, res, next) => {
   try {
@@ -161,14 +217,19 @@ router.post(
   privateMiddleware.checkJWT,
   async (req, res, next) => {
     try {
-      const reservation = await reservationService.createReservation(req.params.id, req.body);
+      const reservation = await reservationService.createReservation(
+        req.params.id,
+        req.body,
+      );
       if (req.accepts("html")) {
         return res.redirect("/dashboard?success=La réservation a été ajoutée.");
       }
       res.status(201).json(reservation);
     } catch (err) {
       if (req.accepts("html")) {
-        return res.redirect(`/dashboard?error=${encodeURIComponent(err.message)}`);
+        return res.redirect(
+          `/dashboard?error=${encodeURIComponent(err.message)}`,
+        );
       }
       next(err);
     }

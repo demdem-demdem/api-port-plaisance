@@ -10,7 +10,7 @@ exports.getAllCatways = async () => {
 };
 
 exports.getCatwayById = async (id) => {
-  const catway = await Catway.findById(id);
+  const catway = await Catway.findOne({ _id: id });
   if (!catway) {
     throw new Error("Catway not found");
   }

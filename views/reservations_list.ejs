@@ -32,7 +32,7 @@
                         <td><%= new Date(res.checkOut).toLocaleDateString() %></td>
                         <td>
                             <% if (catwayId) { %>
-                                <a href="/catway/<%= catwayId %>/reservations/<%= res._id %>">Détails</a>
+                                <a href="/catways/<%= catwayId %>/reservations/<%= res._id %>">Détails</a>
                             <% } else { %>
                                 <span>-</span>
                             <% } %>
@@ -45,7 +45,7 @@
         <p>Aucune réservation pour le moment.</p>
     <% } %>
     <% if (catwayId) { %>
-        <p><a href="/catway/<%= catwayId %>">Retour au Catway</a></p>
+        <p><a href="/catways/<%= catwayId %>">Retour au Catway</a></p>
     <% } else { %>
         <p><a href="/dashboard">Retour au Tableau de Bord</a></p>
     <% } %>
