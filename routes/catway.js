@@ -4,7 +4,11 @@ const catwayService = require("../services/catways");
 const reservationService = require("../services/reservations");
 const privateMiddleware = require("../middleware/private");
 
-// Show the whole list of catways
+// HYBRID ROUTES (The "Whatever" Section)
+// These handle the Browser/Dashboard and the API because I don't want to 
+// write the same logic twice. Content negotiation is a thing.
+
+// GET /catways - Listing the elite's boat parking spots
 router.get("/", privateMiddleware.checkJWT, async (req, res, next) => {
   try {
     const catways = await catwayService.getAllCatways();
@@ -17,7 +21,7 @@ router.get("/", privateMiddleware.checkJWT, async (req, res, next) => {
   }
 });
 
-// Get all reservations across all catways
+// GET /catways/reservations - See who's parking where
 router.get(
   "/reservations",
   privateMiddleware.checkJWT,
@@ -37,7 +41,24 @@ router.get(
   },
 );
 
-// Get catway with id
+// POST /catways/reservations/add - Dashboard specific helper
+router.post("/reservations/add", privateMiddleware.checkJWT, async (req, res, next) => {
+  try {
+    const { catwayId, clientName, boatName, checkIn, checkOut } = req.body;
+    const reservation = await reservationService.createReservation(catwayId, { clientName, boatName, checkIn, checkOut });
+    if (req.accepts("html")) {
+      return res.redirect("/dashboard?success=La réservation a été ajoutée.");
+    }
+    res.status(201).json(reservation);
+  } catch (err) {
+    if (req.accepts("html")) {
+      return res.redirect(`/dashboard?error=${encodeURIComponent(err.message)}`);
+    }
+    next(err);
+  }
+});
+
+// GET /catways/:id - Inspecting a single luxury pier
 router.get("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
   try {
     const catway = await catwayService.getCatwayById(req.params.id);
@@ -50,7 +71,7 @@ router.get("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
   }
 });
 
-// Add a new catway
+// POST /catways - Creating more infrastructure for the 1%
 router.post("/", privateMiddleware.checkJWT, async (req, res, next) => {
   try {
     const catway = await catwayService.createCatway(req.body);
@@ -66,19 +87,8 @@ router.post("/", privateMiddleware.checkJWT, async (req, res, next) => {
   }
 });
 
-// Changing the state (broken, ok, whatever)
-router.patch("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
-  try {
-    const updated = await catwayService.patchCatway(req.params.id, {
-      catwayState: req.body.catwayState,
-    });
-    res.status(200).json(updated);
-  } catch (err) {
-    next(err);
-  }
-});
-
-// Delete a catway (from dashboard form)
+// POST /catways/delete - Because HTML forms are stuck in the 90s 
+// and don't know what a DELETE request is.
 router.post("/delete", privateMiddleware.checkJWT, async (req, res, next) => {
   try {
     await catwayService.deleteCatway(req.body.id);
@@ -94,25 +104,7 @@ router.post("/delete", privateMiddleware.checkJWT, async (req, res, next) => {
   }
 });
 
-// Delete a catway
-router.delete("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
-  try {
-    await catwayService.deleteCatway(req.params.id);
-    if (req.accepts("html")) {
-      return res.redirect("/dashboard?success=Le catway a été supprimé.");
-    }
-    res.status(204).send();
-  } catch (err) {
-    if (req.accepts("html")) {
-      return res.redirect("/dashboard?error=Erreur de suppression.");
-    }
-    next(err);
-  }
-});
-
-// RESERVATIONS
-
-// Get reservations for a single catway
+// GET /catways/:id/reservations - Sub-resource listing
 router.get(
   "/:id/reservations",
   privateMiddleware.checkJWT,
@@ -137,7 +129,7 @@ router.get(
   },
 );
 
-// Get a reservation from a catway
+// GET /catways/:id/reservations/:idReservation
 router.get(
   "/:id/reservations/:idReservation",
   privateMiddleware.checkJWT,
@@ -163,7 +155,7 @@ router.get(
   },
 );
 
-// Create a reservation for this catway
+// POST /catways/:id/reservations
 router.post(
   "/:id/reservations/",
   privateMiddleware.checkJWT,
@@ -183,6 +175,45 @@ router.post(
   },
 );
 
+// PURE API ROUTES
+// Strictly for JSON No fancy html, just data for the hungry machines
+
+// PUT /catways/:id - Total replacement of the object
+// Use this when you want to overwrite everything
+router.put("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
+  try {
+    const replaced = await catwayService.updateCatway(req.params.id, req.body);
+    res.status(200).json(replaced);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PATCH /catways/:id
+// Use this for partial updates, like when the pier is sinking
+
+router.patch("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
+  try {
+    const updated = await catwayService.updateCatway(req.params.id, {
+      catwayState: req.body.catwayState,
+    });
+    res.status(200).json(updated);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /catways/:id The proper way to destroy things
+router.delete("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
+  try {
+    await catwayService.deleteCatway(req.params.id);
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /catway/:id/reservations/:idReservation
 router.delete(
   "/:id/reservations/:idReservation",
   privateMiddleware.checkJWT,
@@ -192,14 +223,8 @@ router.delete(
         req.params.id,
         req.params.idReservation,
       );
-      if (req.accepts("html")) {
-        return res.redirect("/dashboard?success=La réservation a été supprimée.");
-      }
       res.status(204).send();
     } catch (err) {
-      if (req.accepts("html")) {
-        return res.redirect("/dashboard?error=Erreur de suppression.");
-      }
       next(err);
     }
   },

@@ -52,6 +52,6 @@ router.get('/dashboard', privateMiddleware.checkJWT, (req, res) => {
 });
 
 router.use('/users', userRoute);
-router.use('/catway', catwayRoute);
+router.use('/catways', catwayRoute);
 
 module.exports = router;
