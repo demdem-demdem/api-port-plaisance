@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Liste des Catways</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+</head>
+<body>
+    <h1>Gestion du Port - Liste des Catways</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Numéro</th>
+                <th>Type</th>
+                <th>État</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% catways.forEach(function(catway) { %>
+                <tr>
+                    <td><%= catway.catwayNumber %></td>
+                    <td><%= catway.type %></td>
+                    <td><%= catway.catwayState %></td>
+                    <td><a href="/catway/<%= catway._id %>">Voir Détails</a></td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+    <p><a href="/dashboard">Retour au Tableau de Bord</a></p>
+</body>
+</html>

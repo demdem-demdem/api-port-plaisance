@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Liste des Réservations</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+</head>
+<body>
+    <h1><%= catwayId ? 'Réservations pour le Catway' : 'Toutes les Réservations' %></h1>
+    <% if (reservations && reservations.length > 0) { %>
+        <table>
+            <thead>
+                <tr>
+                    <% if (!catwayId) { %>
+                        <th>Catway</th>
+                    <% } %>
+                    <th>Client</th>
+                    <th>Bateau</th>
+                    <th>Arrivée</th>
+                    <th>Départ</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% reservations.forEach(function(res) { %>
+                    <tr>
+                        <% if (!catwayId) { %>
+                            <td><%= res.catwayNumber %></td>
+                        <% } %>
+                        <td><%= res.clientName %></td>
+                        <td><%= res.boatName %></td>
+                        <td><%= new Date(res.checkIn).toLocaleDateString() %></td>
+                        <td><%= new Date(res.checkOut).toLocaleDateString() %></td>
+                        <td>
+                            <% if (catwayId) { %>
+                                <a href="/catway/<%= catwayId %>/reservations/<%= res._id %>">Détails</a>
+                            <% } else { %>
+                                <span>-</span>
+                            <% } %>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    <% } else { %>
+        <p>Aucune réservation pour le moment.</p>
+    <% } %>
+    <% if (catwayId) { %>
+        <p><a href="/catway/<%= catwayId %>">Retour au Catway</a></p>
+    <% } else { %>
+        <p><a href="/dashboard">Retour au Tableau de Bord</a></p>
+    <% } %>
+</body>
+</html>

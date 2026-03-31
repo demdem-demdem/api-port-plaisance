@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Détails du Catway</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+</head>
+<body>
+    <h1>Détails du Catway #<%= catway.catwayNumber %></h1>
+    <div>
+        <p><strong>Identifiant unique:</strong> <%= catway._id %></p>
+        <p><strong>Type de catway:</strong> <%= catway.type %></p>
+        <p><strong>État:</strong> <%= catway.catwayState %></p>
+    </div>
+    <hr>
+    <nav>
+        <a href="/catway/<%= catway._id %>/reservations">Gérer les réservations</a> | 
+        <a href="/catway">Retour à la liste</a>
+    </nav>
+</body>
+</html>

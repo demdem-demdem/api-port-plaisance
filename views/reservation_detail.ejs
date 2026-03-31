@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Détails de la Réservation</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+</head>
+<body>
+    <h1>Détails de la Réservation</h1>
+    <section>
+        <p><strong>Client :</strong> <%= reservation.clientName %></p>
+        <p><strong>Bateau :</strong> <%= reservation.boatName %></p>
+        <p><strong>Numéro de Catway :</strong> <%= reservation.catwayNumber %></p>
+        <p><strong>Date d'entrée :</strong> <%= new Date(reservation.checkIn).toLocaleString() %></p>
+        <p><strong>Date de sortie :</strong> <%= new Date(reservation.checkOut).toLocaleString() %></p>
+    </section>
+    <hr>
+    <p><a href="/catway/<%= catwayId %>/reservations">Retour à la liste des réservations</a></p>
+</body>
+</html>
