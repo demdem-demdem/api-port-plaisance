@@ -10,7 +10,10 @@
     <h1>Modifier l'Utilisateur</h1>
     <p>ID de l'utilisateur : <%= user._id %></p>
 
-    <form action="/users/update/<%= user._id %>" method="POST">
+    <!-- We use the PUT method because we are replacing the entire member's profile. 
+         Even if they change their name to "Boat McBoatface", we update it all. -->
+    <form id="update-user-form" action="/users/<%= user._id %>" method="POST">
+        <input type="hidden" name="_method" value="PUT">
         <div>
             <label for="name">Nom :</label>
             <input type="text" id="name" name="name" value="<%= user.name %>" required>

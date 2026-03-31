@@ -7,90 +7,7 @@ const privateMiddleware = require("../middleware/private");
 // Almost all the routes that have privateMiddleware.checkJWT in it are protected with an account AND password
 // If you're not connected, you're directly redirected to the home page, connect young person!!!!!
 
-// DASHBOARD ONLY ROUTES
-// ==========================================
-// I didn't know what to do for these routes for the dashboard
-// So I made dashboard only routes, that can be accessed on the dashboard. No res.status() needed here.
-
-// POST to add a reservation
-router.post(
-  "/reservations/add",
-  privateMiddleware.checkJWT,
-  async (req, res, next) => {
-    try {
-      const { catwayId, clientName, boatName, checkIn, checkOut } = req.body;
-      await reservationService.createReservation(catwayId, {
-        clientName,
-        boatName,
-        checkIn,
-        checkOut,
-      });
-      res.redirect("/dashboard?success=La réservation a été ajoutée.");
-    } catch (err) {
-      res.redirect(`/dashboard?error=${encodeURIComponent(err.message)}`);
-    }
-  },
-);
-
-// Post to modify a catway
-router.get(
-  "/modify/:id",
-  privateMiddleware.checkJWT,
-  async (req, res, next) => {
-    try {
-      const catway = await catwayService.getCatwayById(req.params.id);
-      res.render("modify_catway", {
-        title: "Modifier le catway",
-        catway: catway,
-      });
-    } catch (err) {
-      res.redirect(`/dashboard?error=${encodeURIComponent("Catway non trouvé.")}`);
-    }
-  },
-);
-
-// After the modify route as been called, it redirects to the update page, which updates the said catway
-router.post(
-  "/update/:id",
-  privateMiddleware.checkJWT,
-  async (req, res, next) => {
-    try {
-      const updatedCatway = await catwayService.updateCatway(req.params.id, req.body);
-      res.redirect(`/dashboard?success=Le catway ${updatedCatway.catwayNumber} a été mis à jour.`);
-    } catch (err) {
-      res.redirect(`/dashboard?error=${encodeURIComponent(err.message)}`);
-    }
-  },
-);
-
-// POST to delete a specific catway
-router.post("/delete", privateMiddleware.checkJWT, async (req, res, next) => {
-  try {
-    await catwayService.deleteCatway(req.body.id);
-    res.redirect("/dashboard?success=Le catway a été supprimé.");
-  } catch (err) {
-    res.redirect("/dashboard?error=Erreur de suppression.");
-  }
-});
-
-// POST to delete a specific reservation 
-router.get(
-  "/:id/reservations/:idReservation/delete",
-  privateMiddleware.checkJWT,
-  async (req, res, next) => {
-    try {
-      await reservationService.deleteReservationForCatway(
-        req.params.id,
-        req.params.idReservation,
-      );
-      res.redirect("/dashboard?success=La réservation a été supprimée");
-    } catch (err) {
-      res.redirect("/dashboard?error=Erreur de suppression.");
-    }
-  },
-);
-
-// HYBRID ROUTES (UI & API)
+// API & DASHBOARD ROUTES
 // ==========================================
 // These handle the Dashboard and the API because I don't want to
 // write the same logic twice. Content negotiation is a thing.
@@ -108,27 +25,6 @@ router.get("/", privateMiddleware.checkJWT, async (req, res, next) => {
   }
 });
 
-// GET the reservations to see who's parking where
-router.get(
-  "/reservations",
-  privateMiddleware.checkJWT,
-  async (req, res, next) => {
-    try {
-      const reservations = await reservationService.getAllReservations();
-      if (req.accepts("html")) {
-        return res.render("reservations_list", {
-          reservations,
-          catwayId: null,
-        });
-      }
-      res.status(200).json(reservations);
-    } catch (err) {
-      next(err);
-    }
-  },
-);
-
-
 // GET a specific catway with its ID to inspect the luxury catway
 router.get("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
   try {
@@ -141,7 +37,6 @@ router.get("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
     next(err);
   }
 });
-
 
 // POST to creating more infrastructure for the 1%
 router.post("/", privateMiddleware.checkJWT, async (req, res, next) => {
@@ -161,6 +56,80 @@ router.post("/", privateMiddleware.checkJWT, async (req, res, next) => {
       );
     }
     // If not it sends the error in json
+    next(err);
+  }
+});
+
+router.get(
+  "/modify/:id",
+  privateMiddleware.checkJWT,
+  async (req, res, next) => {
+    try {
+      const catway = await catwayService.getCatwayById(req.params.id);
+      res.render("modify_catway", {
+        title: "Modifier le Catway",
+        catway: catway,
+      });
+    } catch (err) {
+      res.redirect(
+        `/dashboard?error=${encodeURIComponent("Catway non trouvé.")}`,
+      );
+    }
+  },
+);
+
+// PUT to COMPLETLY REPLACE the catway, it updates it COMPLETELY
+// Use this when you want to overwrite everything
+router.put("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
+  try {
+    const replaced = await catwayService.updateCatway(req.params.id, req.body);
+    if (req.accepts("html")) {
+      return res.redirect(`/dashboard?success=Le catway a été mis à jour.`);
+    }
+    res.status(200).json(replaced);
+  } catch (err) {
+    if (req.accepts("html")) {
+      return res.redirect(
+        `/dashboard?error=${encodeURIComponent(err.message)}`,
+      );
+    }
+    next(err);
+  }
+});
+
+// PATCH for partial updates, like when the catway has a big hole in it and is sinking
+router.patch("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
+  try {
+    const updated = await catwayService.updateCatway(req.params.id, {
+      catwayState: req.body.catwayState,
+    });
+    if (req.accepts("html")) {
+      return res.redirect(`/dashboard?success=Le catway a été mis à jour.`);
+    }
+    res.status(200).json(updated);
+  } catch (err) {
+    // Assuming a patch from dashboard would also redirect to dashboard
+    if (req.accepts("html")) {
+      return res.redirect(
+        `/dashboard?error=${encodeURIComponent(err.message)}`,
+      );
+    }
+    next(err);
+  }
+});
+
+// DELETE the catway. The proper way to destroy the catway. Thank our dear lord the Vourme
+router.delete("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
+  try {
+    await catwayService.deleteCatway(req.params.id);
+    if (req.accepts("html")) {
+      return res.redirect("/dashboard?success=Le catway a été supprimé.");
+    }
+    res.status(204).send();
+  } catch (err) {
+    if (req.accepts("html")) {
+      return res.redirect("/dashboard?error=Erreur de suppression.");
+    }
     next(err);
   }
 });
@@ -218,7 +187,7 @@ router.get(
 
 // POST to create a new reservation for a specific catway :)
 router.post(
-  "/:id/reservations/",
+  "/:id/reservations",
   privateMiddleware.checkJWT,
   async (req, res, next) => {
     try {
@@ -241,44 +210,6 @@ router.post(
   },
 );
 
-// PURE API ROUTES
-// ==========================================
-// Only JSON and API here, no fancy view
-// I didn't have enough resources or money for it, sorry (talk about it to hr)
-
-// PUT to COMPLETLY REPLACE the catway, it updates it COMPLETELY
-// Use this when you want to overwrite everything
-router.put("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
-  try {
-    const replaced = await catwayService.updateCatway(req.params.id, req.body);
-    res.status(200).json(replaced);
-  } catch (err) {
-    next(err);
-  }
-});
-
-// PATCH for partial updates, like when the catway has a big hole in it and is sinking
-router.patch("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
-  try {
-    const updated = await catwayService.updateCatway(req.params.id, {
-      catwayState: req.body.catwayState,
-    });
-    res.status(200).json(updated);
-  } catch (err) {
-    next(err);
-  }
-});
-
-// DELETE the catway. The proper way to destroy the catway. Thank our dear lord the Vourme
-router.delete("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
-  try {
-    await catwayService.deleteCatway(req.params.id);
-    res.status(204).send();
-  } catch (err) {
-    next(err);
-  }
-});
-
 // DELETE the reservations of a specific catway!!! its really specific!!! okay!!!
 router.delete(
   "/:id/reservations/:idReservation",
@@ -289,8 +220,16 @@ router.delete(
         req.params.id,
         req.params.idReservation,
       );
+      if (req.accepts("html")) {
+        return res.redirect(
+          "/dashboard?success=La réservation a été supprimée",
+        );
+      }
       res.status(204).send();
     } catch (err) {
+      if (req.accepts("html")) {
+        return res.redirect("/dashboard?error=Erreur de suppression.");
+      }
       next(err);
     }
   },
