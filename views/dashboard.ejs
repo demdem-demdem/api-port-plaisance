@@ -78,7 +78,7 @@
 
     <section>
         <h2>Gestion des Réservations</h2>
-        <form action="/catways/reservation/add" method="POST">
+        <form method="POST" onsubmit="this.action ='/catways/' + this.catwayId.value + '/reservations/'" >
             <h3>Enregistrer une Réservation</h3>
             <input type="text" name="catwayId" placeholder="ID du Catway" required>
             <input type="text" name="clientName" placeholder="Nom Client" required>
@@ -90,25 +90,17 @@
 
         <form id="details-res">
             <h3>Détails d'une Résemrvation</h3>
-            <input type="text" id="cat-id-res" placeholder="ID Catway">
-            <input type="text" id="res-id" placeholder="ID Réservation">
-            <button type="button" onclick="viewReservation()">Voir</button>
+            <input type="text" id="cat-id-res" placeholder="ID Catway" required>
+            <input type="text" id="res-id" placeholder="ID Réservation" required>
+            <button type="button" onclick="window.location.href='/catways/' + document.getElementById('cat-id-res').value + '/reservations/' + document.getElementById('res-id').value">Voir</button>
         </form>
 
-        <form action="/" method="post"></form>
+        <form action="/catways/delete" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette reservation ?')">
+            <h3>Supprimer un Catway (ID)</h3>
+            <input type="text" id="cat-id-res-del" placeholder="ID Catway" required>
+            <input type="text" id="id-res-del" placeholder="ID Reservation" required>
+            <button type="button" onclick="window.location.href='/catways/' + document.getElementById('cat-id-res-del').value + '/reservations/' + document.getElementById('id-res-del').value +'/delete'">Supprimer</button>
+        </form>
     </section>
-
-    <script>
-        function viewReservation() {
-            const catId = document.getElementById('cat-id-res').value;
-            const resId = document.getElementById('res-id').value;
-            if(catId && resId) {
-                window.location.href = `/catway/${catId}/reservations/${resId}`;
-            } else {
-                alert("Veuillez remplir les deux IDs");
-            }
-        }
-
-    </script>
 </body>
 </html>

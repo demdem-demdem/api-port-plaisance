@@ -1,13 +1,12 @@
 const Reservation = require("../models/reservations");
-const Catway = require("../models/catways"); // To check if catway exists
+const Catway = require("../models/catways");
 
 exports.createReservation = async (catwayId, reservationData) => {
   const catway = await Catway.findById(catwayId);
   if (!catway) {
     throw new Error("Catway not found");
   }
-  // Ensure the reservation is linked to the correct catway
-  reservationData.catwayNumber = catway.catwayNumber; // Or catwayId, depending on your schema
+  reservationData.catwayNumber = catway.catwayNumber; 
   return await Reservation.create(reservationData);
 };
 
@@ -24,7 +23,8 @@ exports.getAllReservationsForCatway = async (catwayId) => {
 };
 
 exports.getReservationByIdForCatway = async (catwayId, reservationId) => {
-  const catway = await Catway.findById(catwayId);
+  
+  const catway = await Catway.findById(catwayId );
   if (!catway) {
     throw new Error("Catway not found");
   }
@@ -40,6 +40,7 @@ exports.getReservationByIdForCatway = async (catwayId, reservationId) => {
 
 exports.deleteReservationForCatway = async (catwayId, reservationId) => {
   const catway = await Catway.findById(catwayId);
+  console.log(catway)
   if (!catway) {
     throw new Error("Catway not found");
   }
