@@ -2,10 +2,49 @@ const User = require("../models/users");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
+exports.getById = async (id) => {
+  const user = await User.findOne({ _id: id });
+  if (!user) {
+    throw new Error("user_not_found");
+  }
+  return user;
+};
+
+
 exports.add = async (userData) => {
-  // The service only receives the data it needs
+  const existingUser = await User.findOne({ email: userData.email });
+  if (existingUser) {
+    throw new Error("email_already_exists");
+  }
+
   return await User.create(userData);
 };
+
+exports.modify = async (id, userData) => {
+  const user = await User.findById(id);
+
+  if (!user) {
+    throw new Error("user_not_found");
+  }
+
+  if (userData.email && userData.email !== user.email) {
+    const existingUser = await User.findOne({ email: userData.email });
+    if (existingUser) {
+      throw new Error("email_already_exists");
+    }
+    user.email = userData.email;
+  }
+
+  if (userData.name) user.name = userData.name;
+
+  if (userData.password && userData.password.trim() !== "") {
+    user.password = userData.password;
+  }
+
+  return await user.save();
+};
+
+
 
 exports.delete = async (id) => {
   return await User.deleteOne({ _id: id });

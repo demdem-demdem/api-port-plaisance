@@ -6,10 +6,21 @@
     <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
 <body>
+    <% if (locals.success) { %>
+        <div style="background-color: #d4edda; color: #155724; padding: 10px; border: 1px solid #c3e6cb; margin-bottom: 20px;">
+            <%= success %>
+        </div>
+    <% } %>
+
+    <% if (locals.error) { %>
+        <div style="background-color: #f8d7da; color: #721c24; padding: 10px; border: 1px solid #f5c6cb; margin-bottom: 20px;">
+            <strong>Erreur :</strong> <%= error %>
+        </div>
+    <% } %>
     <h1>Tableau de Bord - Port de Plaisance Russell</h1>
     <nav>
-        <a href="/catway">Liste des Catways</a> | 
-        <a href="/catway/reservations/">Toutes les Réservations</a>
+        <a href="/catways">Liste des Catways</a> | 
+        <a href="/catways/reservations/">Toutes les Réservations</a>
     </nav>
 
     <section>
@@ -21,6 +32,11 @@
             <input type="password" name="password" placeholder="Mot de passe" required>
             <button type="submit">Créer</button>
         </form>
+        <form id="modify-user">
+            <h3>Modifier un Utilisateur (ID)</h3>
+            <input type="text" id="modify-id" placeholder="ID Utilisater">
+            <button type="button" onclick="window.location.href='/users/modify/' + document.getElementById('modify-id').value">Modifier Utilisateur</button>
+        </form>
         <form action="/users/delete" method="POST">
             <h3>Supprimer un Utilisateur (ID)</h3>
             <input type="text" name="id" placeholder="ID Utilisateur" required>
@@ -30,7 +46,7 @@
 
     <section>
         <h2>Gestion des Catways</h2>
-        <form action="/catway" method="POST">
+        <form action="/catways" method="POST">
             <h3>Créer un Catway</h3>
             <input type="number" name="catwayNumber" placeholder="Numéro" required>
             <select name="type">
@@ -44,13 +60,25 @@
         <form id="details-catway">
             <h3>Détails d'un Catway</h3>
             <input type="text" id="catway-id" placeholder="ID Catway">
-            <button type="button" onclick="window.location.href='/catway/' + document.getElementById('catway-id').value">Voir Détails</button>
+            <button type="button" onclick="window.location.href='/catways/' + document.getElementById('catway-id').value">Voir Détails</button>
+        </form>
+
+        <form id="modify-catway">
+            <h3>Modifier un Catway (ID)</h3>
+            <input type="text" id="catway-modify-id" placeholder="ID Catway">
+            <button type="button" onclick="window.location.href='/catways/modify/' + document.getElementById('catway-modify-id').value">Modifier Catway</button>
+        </form>
+
+        <form action="/catways/delete" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce catway ?')">
+            <h3>Supprimer un Catway (ID)</h3>
+            <input type="text" name="id" placeholder="ID Catway" required>
+            <button type="submit">Supprimer</button>
         </form>
     </section>
 
     <section>
         <h2>Gestion des Réservations</h2>
-        <form action="/catway/reservation/add" method="POST">
+        <form action="/catways/reservation/add" method="POST">
             <h3>Enregistrer une Réservation</h3>
             <input type="text" name="catwayId" placeholder="ID du Catway" required>
             <input type="text" name="clientName" placeholder="Nom Client" required>
@@ -61,11 +89,13 @@
         </form>
 
         <form id="details-res">
-            <h3>Détails d'une Réservation</h3>
+            <h3>Détails d'une Résemrvation</h3>
             <input type="text" id="cat-id-res" placeholder="ID Catway">
             <input type="text" id="res-id" placeholder="ID Réservation">
             <button type="button" onclick="viewReservation()">Voir</button>
         </form>
+
+        <form action="/" method="post"></form>
     </section>
 
     <script>
@@ -78,6 +108,7 @@
                 alert("Veuillez remplir les deux IDs");
             }
         }
+
     </script>
 </body>
 </html>

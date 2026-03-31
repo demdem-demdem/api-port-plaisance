@@ -10,7 +10,7 @@ exports.getAllCatways = async () => {
 };
 
 exports.getCatwayById = async (id) => {
-  const catway = await Catway.findById(id);
+  const catway = await Catway.findOne({ _id: id });
   if (!catway) {
     throw new Error("Catway not found");
   }
@@ -20,19 +20,8 @@ exports.getCatwayById = async (id) => {
 exports.updateCatway = async (id, catwayData) => {
   const catway = await Catway.findByIdAndUpdate(id, catwayData, {
     new: true, 
-    runValidators: true, 
-  });
-  if (!catway) {
-    throw new Error("Catway not found");
-  }
-  return catway;
-};
-
-exports.patchCatway = async (id, catwayData) => {
-  
-  const catway = await Catway.findByIdAndUpdate(id, catwayData, {
-    new: true, 
-    runValidators: true, 
+    runValidators: true,
+    overwrite: false // PATCH/Partial by default, PUT passes the full object anyway
   });
   if (!catway) {
     throw new Error("Catway not found");

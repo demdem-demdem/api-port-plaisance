@@ -22,8 +22,14 @@ router.post('/authenticate', async (req, res, next) => {
     // Shove the token in a cookie so the browser remembers us
     res.cookie('token', result.token, { httpOnly: true, secure: false }); 
     
-    res.redirect('/dashboard');
+    if (req.accepts('html')) {
+      return res.redirect('/dashboard');
+    }
+    res.status(200).json(result);
   } catch (err) {
+    if (req.accepts('html')) {
+      return res.redirect(`/?error=${encodeURIComponent(err.message)}`);
+    }
     next(err);
   }
 });
@@ -38,10 +44,14 @@ router.put('/add', async (req, res, next) => {
 });
 
 router.get('/dashboard', privateMiddleware.checkJWT, (req, res) => {
-  res.render('dashboard', { title: 'Tableau de Bord' });
+  res.render('dashboard', { 
+    title: 'Tableau de Bord',
+    error: req.query.error,
+    success: req.query.success
+  });
 });
 
 router.use('/users', userRoute);
-router.use('/catway', catwayRoute);
+router.use('/catways', catwayRoute);
 
 module.exports = router;

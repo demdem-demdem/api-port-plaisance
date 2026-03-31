@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+
+</head>
+<body>
+    <h1>Modifier l'Utilisateur</h1>
+    <p>ID de l'utilisateur : <%= user._id %></p>
+
+    <form action="/users/update/<%= user._id %>" method="POST">
+        <div>
+            <label for="name">Nom :</label>
+            <input type="text" id="name" name="name" value="<%= user.name %>" required>
+        </div>
+        <br>
+        <div>
+            <label for="email">Email :</label>
+            <input type="email" id="email" name="email" value="<%= user.email %>" required>
+        </div>
+        <br>
+        <div>
+            <label for="password">Nouveau mot de passe (laisser vide pour ne pas modifier) :</label>
+            <input type="password" id="password" name="password">
+        </div>
+        <br>
+        <button type="submit">Enregistrer les modifications</button>
+    </form>
+
+    <br>
+    <a href="/dashboard">Retour au tableau de bord</a>
+    
+</body>
+</html>
