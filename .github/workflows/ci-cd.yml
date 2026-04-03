@@ -23,8 +23,7 @@ jobs:
     - name: Get the public IP of the runner
       id: get-ip
       shell: bash
-      run: |
-        echo "curl https://ipinfo.io/ip >> "$GITHUB_OUTPUT"
+      run: curl https://ipinfo.io/ip
 
     - name: Install dependencies
       run: npm install
@@ -32,7 +31,7 @@ jobs:
     - name: Run JSDoc to verify documentation build
       run: npm run doc
 
-    # Exemple d'exécution de tests avec les variables d'environnement
+    # Exécution de tests avec les variables d'environnement
     - name: Run tests
       run: npx mocha tests/*.test.js
       env:
