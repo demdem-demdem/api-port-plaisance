@@ -23,11 +23,11 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-- name: Get the public IP of the runner
-  id: get-ip
-  shell: bash
-  run: |
-    echo "ip-address=$(curl https://checkip.amazonaws.com)" >> "$GITHUB_OUTPUT"
+    - name: Get the public IP of the runner
+      id: get-ip
+      shell: bash
+      run: |
+        echo "ip-address=$(curl https://checkip.amazonaws.com)" >> "$GITHUB_OUTPUT"
 
     - name: Run JSDoc to verify documentation build
       run: npm run doc
