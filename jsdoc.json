@@ -1,0 +1,14 @@
+{
+    "source": {
+        "include": ["services", "routes", "models", "middleware"],
+        "includePattern": ".+\\.js$",
+        "excludePattern": "(^|\\/|\\\\)_"
+    },
+    "opts": {
+        "destination": "./out/",
+        "recurse": true,
+        "readme": "./docs/overview.md",
+        "tutorials": "./docs/tutorials"
+    },
+    "plugins": ["plugins/markdown"]
+}

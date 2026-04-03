@@ -32,20 +32,32 @@
             <input type="password" name="password" placeholder="Mot de passe" required>
             <button type="submit">Créer</button>
         </form>
+
         <form id="modify-user">
             <h3>Modifier un Utilisateur (ID)</h3>
             <input type="text" id="modify-id" placeholder="ID Utilisater">
             <button type="button" onclick="window.location.href='/users/modify/' + document.getElementById('modify-id').value">Modifier Utilisateur</button>
         </form>
-        <form action="/users/delete" method="POST">
+
+        <!-- Form to banish a user from the elite club. They probably didn't pay their dues. 
+             We use JavaScript to inject the ID into the action URL because REST demands /users/:id -->
+        <form id="delete-user-form" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
+            <input type="hidden" name="_method" value="DELETE">
             <h3>Supprimer un Utilisateur (ID)</h3>
-            <input type="text" name="id" placeholder="ID Utilisateur" required>
+            <input type="text" id="delete-user-id" placeholder="ID Utilisateur" required>
             <button type="submit">Supprimer</button>
         </form>
+
+        <script>
+            document.getElementById('delete-user-form').addEventListener('submit', function(event) {
+                this.action = '/users/' + document.getElementById('delete-user-id').value;
+            });
+        </script>
     </section>
 
     <section>
         <h2>Gestion des Catways</h2>
+        <!-- Form to create a catway, we built a new one last week and it still isnt in the database? What is jeremy doing goddamn -->
         <form action="/catways" method="POST">
             <h3>Créer un Catway</h3>
             <input type="number" name="catwayNumber" placeholder="Numéro" required>
@@ -57,28 +69,46 @@
             <button type="submit">Ajouter</button>
         </form>
 
+        <!-- Form to get details for a catway, knowing if its still usable can be a bit useful methinks -->
         <form id="details-catway">
             <h3>Détails d'un Catway</h3>
             <input type="text" id="catway-id" placeholder="ID Catway">
             <button type="button" onclick="window.location.href='/catways/' + document.getElementById('catway-id').value">Voir Détails</button>
         </form>
 
+        <!-- Send to a form to modify and update a catway!! Like maybe someone drilled a hole in the catway directly, tryna get some more money for it.... Damn you capitalism!!!-->
         <form id="modify-catway">
             <h3>Modifier un Catway (ID)</h3>
             <input type="text" id="catway-modify-id" placeholder="ID Catway">
             <button type="button" onclick="window.location.href='/catways/modify/' + document.getElementById('catway-modify-id').value">Modifier Catway</button>
         </form>
 
-        <form action="/catways/delete" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce catway ?')">
+        <!-- Form to remove a catway. Maybe Jeff broke it again. 
+             Same logic here, we target the specific resource ID with a DELETE method. -->
+        <form id="delete-catway-form" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce catway ?')">
+            <input type="hidden" name="_method" value="DELETE">
             <h3>Supprimer un Catway (ID)</h3>
-            <input type="text" name="id" placeholder="ID Catway" required>
+            <input type="text" id="delete-catway-id" placeholder="ID Catway" required>
             <button type="submit">Supprimer</button>
         </form>
+
+        <script>
+            document.getElementById('delete-catway-form').addEventListener('submit', function(event) {
+                this.action = '/catways/' + document.getElementById('delete-catway-id').value;
+            });
+        </script>
     </section>
 
     <section>
         <h2>Gestion des Réservations</h2>
-        <form action="/catways/reservation/add" method="POST">
+        <!-- Form to create a reservation... in this economy? -->
+        <form method="POST" onsubmit="
+            if (new Date(this.checkIn.value) > new Date(this.checkOut.value)) {
+                alert('Erreur : La date de début ne peut pas être après la date de fin.');
+                return false;
+            }
+            this.action ='/catways/' + this.catwayId.value + '/reservations/';
+        " >
             <h3>Enregistrer une Réservation</h3>
             <input type="text" name="catwayId" placeholder="ID du Catway" required>
             <input type="text" name="clientName" placeholder="Nom Client" required>
@@ -88,27 +118,32 @@
             <button type="submit">Réserver</button>
         </form>
 
+        <!-- Form to get the details of a reservation !! Like who is it??? -->
+        <!-- WHAT DO THEY WANT!! -->
         <form id="details-res">
             <h3>Détails d'une Résemrvation</h3>
-            <input type="text" id="cat-id-res" placeholder="ID Catway">
-            <input type="text" id="res-id" placeholder="ID Réservation">
-            <button type="button" onclick="viewReservation()">Voir</button>
+            <input type="text" id="cat-id-res" placeholder="ID Catway" required>
+            <input type="text" id="res-id" placeholder="ID Réservation" required>
+            <button type="button" onclick="window.location.href='/catways/' + document.getElementById('cat-id-res').value + '/reservations/' + document.getElementById('res-id').value">Voir</button>
         </form>
 
-        <form action="/" method="post"></form>
+        <!-- Form to cancel a reservation. Someone probably found a better spot. 
+             This one is really specific!!! /catways/:id/reservations/:idReservation -->
+        <form id="delete-reservation-form" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?')">
+            <input type="hidden" name="_method" value="DELETE">
+            <h3>Supprimer une Réservation (ID)</h3>
+            <input type="text" id="cat-id-res-del" placeholder="ID Catway" required>
+            <input type="text" id="id-res-del" placeholder="ID Reservation" required>
+            <button type="submit">Supprimer</button>
+        </form>
+
+        <script>
+            document.getElementById('delete-reservation-form').addEventListener('submit', function(event) {
+                const catwayId = document.getElementById('cat-id-res-del').value;
+                const reservationId = document.getElementById('id-res-del').value; 
+                this.action = '/catways/' + catwayId + '/reservations/' + reservationId;
+            });
+        </script>
     </section>
-
-    <script>
-        function viewReservation() {
-            const catId = document.getElementById('cat-id-res').value;
-            const resId = document.getElementById('res-id').value;
-            if(catId && resId) {
-                window.location.href = `/catway/${catId}/reservations/${resId}`;
-            } else {
-                alert("Veuillez remplir les deux IDs");
-            }
-        }
-
-    </script>
 </body>
 </html>

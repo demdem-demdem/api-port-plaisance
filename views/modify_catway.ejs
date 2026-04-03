@@ -11,7 +11,10 @@
     <p>Numéro : <%= catway.catwayNumber %></p>
     <p>Type : <%= catway.type %></p>
 
-    <form action="/catways/update/<%= catway._id %>" method="POST">
+    <!-- PATCH for partial updates, because usually the catway is fine, it just needs a status change.
+         Unless Jeff really did hit it with his boat. -->
+    <form action="/catways/<%= catway._id %>" method="POST">
+        <input type="hidden" name="_method" value="PATCH">
         <label for="catwayState">Nouvel État :</label>
         <input type="text" id="catwayState" name="catwayState" value="<%= catway.catwayState %>" required>
         

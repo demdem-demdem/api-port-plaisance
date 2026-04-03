@@ -13,17 +13,21 @@
       courant de qui s'est posés sur les catways (et leur bateau)!
     </p>
 
-    <form action="http://localhost:3000/users/authenticate" method="post">
+    <form action="/authenticate" method="post">
       <fieldset>
         <legend>Authenticate</legend>
         <br />
         <label for="email">Email: </label>
         <input type="text" name="email" /><br /><br />
         <label for="password">Password: </label>
-        <input type="text" name="password" />
+        <input type="password" name="password" />
 
         <input type="submit" value="submit" />
       </fieldset>
     </form>
+
+    <div>
+      <a href="/documentation">Accéder à la Documentation</a>
+    </div>
   </body>
 </html>

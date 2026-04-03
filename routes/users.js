@@ -5,63 +5,39 @@ const service = require("../services/users");
 
 const privateMiddleware = require("../middleware/private");
 
-router.post("/authenticate", async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
-    const result = await service.authenticate(email, password);
+// Almost all the routes that have privateMiddleware.checkJWT in them are protected with an account AND password
+// If you're not connected, you're directly redirected to the home page, connect young person!!!!!
 
-    res.cookie("token", result.token, { httpOnly: true, secure: false });
+// API & DASHBOARD ROUTES
+// ==========================================
+// These handle the Dashboard and the API because I don't want to
+// write the same logic twice. Content negotiation is a thing.
 
-    if (req.accepts("html")) {
-      return res.redirect("/dashboard");
-    }
-    res.status(200).json(result);
-  } catch (err) {
-    if (req.accepts("html")) {
-      return res.redirect(`/?error=${encodeURIComponent(err.message)}`);
-    }
-    next(err);
-  }
-});
-
+// POST to register a new elite member to the yacht club
 router.post("/add", privateMiddleware.checkJWT, async (req, res, next) => {
   try {
     const user = await service.add(req.body);
-    if (req.accepts("html")) {
+    if (req.accepts(['json', 'html']) === 'html') {
       return res.redirect(
         `/dashboard?success=L'utilisateur ${user.name} a été ajouté avec succès !`,
       );
     }
     res.status(201).json(user);
   } catch (err) {
-    if (req.accepts("html")) {
-      const msg = err.message === "email_already_exists" ? "Cet email est déjà enregistré." : "Erreur lors de l'ajout.";
+    if (req.accepts(['json', 'html']) === 'html') {
+      const msg = err.message === "email_deja_existant" ? "Cet email est déjà enregistré." : "Erreur lors de l'ajout.";
       return res.redirect(`/dashboard?error=${encodeURIComponent(msg)}`);
     }
-    next(err);
+    const status = err.message === "email_deja_existant" ? 409 : 400;
+    res.status(status).json({ error: err.message });
   }
 });
 
-router.post("/delete", privateMiddleware.checkJWT, async (req, res, next) => {
-  try {
-    await service.delete(req.body.id);
-    if (req.accepts("html")) {
-      return res.redirect(`/dashboard?success=L'utilisateur a été supprimé.`);
-    }
-    res.status(200).json({ message: "User deleted" });
-  } catch (err) {
-    if (req.accepts("html")) {
-      return res.redirect("/dashboard?error=Erreur lors de la suppression.");
-    }
-    next(err);
-  }
-});
-
+// GET the form to modify a user, maybe she changed her name I don't know (trans rights)
 router.get("/modify/:id", privateMiddleware.checkJWT, async (req, res, next) => {
   try {
     const user = await service.getById(req.params.id);
-    console.log(user);
-    if (req.accepts("html")) {
+    if (req.accepts(['json', 'html']) === 'html') {
       return res.render("modify_user", {
         title: "Modifier l'utilisateur",
         user: user
@@ -69,32 +45,54 @@ router.get("/modify/:id", privateMiddleware.checkJWT, async (req, res, next) => 
     }
     res.status(200).json(user);
   } catch (err) {
-    if (req.accepts("html")) {
-      return res.redirect(`/dashboard?error=${encodeURIComponent("Utilisateur non trouvé.")}`);
+    // Redirect on error for HTML clients
+    if (req.accepts(['json', 'html']) !== 'html') {
+      return res.status(404).json({
+        error: "Utilisateur non trouvé.",
+        message: err.message
+      });
     }
-    next(err);
+    res.redirect(`/dashboard?error=${encodeURIComponent("Utilisateur non trouvé.")}`);
   }
 });
 
-router.post("/update/:id", privateMiddleware.checkJWT, async (req, res, next) => {
+
+
+// PUT to update a user
+router.put("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
   try {
     const updatedUser = await service.modify(req.params.id, req.body);
-    console.log('Woah', updatedUser);
-    if (req.accepts("html")) {
+    if (req.accepts(['json', 'html']) === 'html') {
       return res.redirect(
         `/dashboard?success=L'utilisateur ${updatedUser.name} a été mis à jour.`
       );
     }
     res.status(200).json(updatedUser);
   } catch (err) {
-    if (req.accepts("html")) {
-      const msg = err.message === "email_already_exists" ? "Cet email est déjà utilisé." : "Erreur lors de la modification.";
+    if (req.accepts(['json', 'html']) === 'html') {
+      const msg = err.message === "email_deja_existant" ? "Cet email est déjà utilisé." : "ancien_mot_de_passe_incorrect" ? "Le mot de passe actuel donné n'est pas valide" : "Erreur lors de la modification.";
       return res.redirect(`/dashboard?error=${encodeURIComponent(msg)}`);
+    }
+    const status = err.message === "email_deja_existant" ? 409 : 400;
+    res.status(status).json({ error: err.message });
+  }
+});
+
+// DELETE to remove a user
+router.delete("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
+  try {
+    // Assuming service.delete takes ID directly from req.params.id
+    await service.delete(req.params.id);
+    if (req.accepts(['json', 'html']) === 'html') {
+      return res.redirect(`/dashboard?success=L'utilisateur a été supprimé.`);
+    }
+    res.status(204).send(); // No content for successful deletion
+  } catch (err) {
+    if (req.accepts(['json', 'html']) === 'html') {
+      return res.redirect("/dashboard?error=Erreur lors de la suppression.");
     }
     next(err);
   }
-
 });
-
 
 module.exports = router;

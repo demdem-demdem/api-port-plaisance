@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Tutorial: tutorial</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Tutorial: tutorial</h1>
+
+    <section>
+
+<header>
+    
+
+    <h2>tutorial</h2>
+</header>
+
+<article>
+    <h1>Tutoriels d'Utilisation</h1>
+<p>Ce guide vous explique comment utiliser les différentes fonctionnalités de l'API Russell pour gérer le port.</p>
+<hr>
+<h2>1. Authentification et Session</h2>
+<p>L'accès à la majorité des fonctions nécessite d'être connecté.</p>
+<h3>Se connecter</h3>
+<ol>
+<li><strong>Action</strong> : Envoyez vos identifiants via l'interface de connexion.</li>
+<li><strong>Technique</strong> : Requête POST vers <code>/authenticate</code> avec <code>email</code> et <code>password</code>.</li>
+<li><strong>Résultat</strong> : Un cookie contenant un jeton JWT est créé. Ce jeton expire après 24 heures.</li>
+</ol>
+<hr>
+<h2>2. Gestion des Utilisateurs (Tableau de bord)</h2>
+<p>Cette section permet de gérer les accès au système.</p>
+<h3>Ajouter un collaborateur</h3>
+<ul>
+<li><strong>Action</strong> : Remplissez le formulaire d'inscription.</li>
+<li><strong>Données</strong> : Nom, Email unique, Mot de passe.</li>
+<li><strong>Note</strong> : Le système empêche la création de deux comptes avec le même email.</li>
+</ul>
+<h3>Modifier ou Supprimer un utilisateur</h3>
+<ul>
+<li><strong>Modification</strong> : Vous pouvez changer le nom, l'email ou le mot de passe d'un utilisateur existant.</li>
+<li><strong>Suppression</strong> : Un utilisateur peut être retiré du système via son ID unique.</li>
+</ul>
+<hr>
+<h2>3. Gestion des Catways</h2>
+<p>Les catways sont les emplacements physiques du port.</p>
+<h3>Créer un emplacement</h3>
+<ul>
+<li><strong>Données nécessaires</strong> : Numéro du catway (doit être unique), type (<code>long</code> ou <code>short</code>) et l'état actuel.</li>
+<li><strong>Vérification</strong> : Si le numéro existe déjà, l'API renverra une erreur pour éviter les doublons.</li>
+</ul>
+<h3>Consulter et Modifier</h3>
+<ul>
+<li><strong>Liste</strong> : Affichez tous les catways pour voir l'occupation globale du port.</li>
+<li><strong>Détails</strong> : Cliquez sur un catway pour voir ses spécifications techniques.</li>
+<li><strong>Mise à jour</strong> : Si l'état d'un catway change (ex: suite à des réparations), modifiez son champ &quot;État&quot;.</li>
+</ul>
+<h3>Supprimer un emplacement</h3>
+<ul>
+<li><strong>Attention</strong> : La suppression d'un catway est définitive. Assurez-vous qu'aucune réservation n'est en cours.</li>
+</ul>
+<hr>
+<h2>4. Gestion des Réservations</h2>
+<p>C'est ici que vous gérez les entrées et sorties des bateaux.</p>
+<h3>Créer une réservation</h3>
+<ol>
+<li>Sélectionnez un catway disponible.</li>
+<li>Remplissez les informations du client et du bateau.</li>
+<li>Indiquez les dates de <code>checkIn</code> (arrivée) et <code>checkOut</code> (départ).</li>
+<li><strong>Automatisme</strong> : Le système lie la réservation au numéro de catway sélectionné de manière sécurisée.</li>
+</ol>
+<h3>Consulter les réservations</h3>
+<ul>
+<li><strong>Vue Globale</strong> : Voir toutes les réservations du port.</li>
+<li><strong>Vue par Catway</strong> : Voir l'historique et les réservations futures pour un emplacement spécifique.</li>
+<li><strong>Détails</strong> : Accéder aux informations complètes d'une réservation précise via son identifiant.</li>
+</ul>
+<h3>Annuler ou Supprimer une réservation</h3>
+<ul>
+<li>Si un client annule ou si son séjour est terminé, vous pouvez supprimer la réservation pour libérer visuellement l'emplacement dans le système.</li>
+</ul>
+<hr>
+<h2>5. Résumé des bonnes pratiques</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Objectif</th>
+<th style="text-align:left">Méthode recommandée</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Sécurité</strong></td>
+<td style="text-align:left">Ne partagez jamais vos identifiants. Déconnectez-vous après usage.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Maintenance</strong></td>
+<td style="text-align:left">Mettez à jour l'état des catways régulièrement pour refléter la réalité du port.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Précision</strong></td>
+<td style="text-align:left">Vérifiez bien les dates de check-in/check-out pour éviter les chevauchements de bateaux.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><em>Besoin d'aide supplémentaire ? Consultez le <a href="tutorial-glossary.html">Glossaire</a> ou la section <a href="tutorial-maintenance.html">Maintenance</a>.</em></p>
+</article>
+
+</section>
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Tutorials</h3><ul><li><a href="tutorial-glossary.html">glossary</a></li><li><a href="tutorial-maintenance.html">maintenance</a></li><li><a href="tutorial-tutorial.html">tutorial</a></li></ul><h3>Global</h3><ul><li><a href="global.html#add">add</a></li><li><a href="global.html#authenticate">authenticate</a></li><li><a href="global.html#createCatway">createCatway</a></li><li><a href="global.html#createReservation">createReservation</a></li><li><a href="global.html#delete">delete</a></li><li><a href="global.html#deleteCatway">deleteCatway</a></li><li><a href="global.html#deleteReservationForCatway">deleteReservationForCatway</a></li><li><a href="global.html#getAllCatways">getAllCatways</a></li><li><a href="global.html#getAllReservations">getAllReservations</a></li><li><a href="global.html#getAllReservationsForCatway">getAllReservationsForCatway</a></li><li><a href="global.html#getById">getById</a></li><li><a href="global.html#getCatwayById">getCatwayById</a></li><li><a href="global.html#getReservationByIdForCatway">getReservationByIdForCatway</a></li><li><a href="global.html#modify">modify</a></li><li><a href="global.html#updateCatway">updateCatway</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Apr 03 2026 10:42:24 GMT+0200 (Central European Summer Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
