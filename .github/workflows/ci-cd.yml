@@ -24,7 +24,7 @@ jobs:
       id: get-ip
       shell: bash
       run: |
-        echo "ip-address=$(curl https://checkip.amazonaws.com)" >> "$GITHUB_OUTPUT"
+        echo "curl https://ipinfo.io/ip >> "$GITHUB_OUTPUT"
 
     - name: Install dependencies
       run: npm install
