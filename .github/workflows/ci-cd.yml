@@ -20,6 +20,12 @@ jobs:
         cache: 'npm'
         cache-dependency-path: './package-lock.json'
 
+    - name: Get the public IP of the runner
+      id: get-ip
+      shell: bash
+      run: |
+        echo "ip-address=$(curl https://checkip.amazonaws.com)" >> "$GITHUB_OUTPUT"
+
     - name: Install dependencies
       run: npm install
 
