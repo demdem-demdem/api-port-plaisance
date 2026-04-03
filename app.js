@@ -31,6 +31,8 @@ app.use(methodOverride(function (req, res) {
 }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+// Servir la documentation générée par JSDoc
+app.use('/documentation', express.static(path.join(__dirname, 'out')));
 
 app.use('/', indexRouter);
 

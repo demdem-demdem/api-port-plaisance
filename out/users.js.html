@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: users.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: users.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const User = require("../models/users");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+
+/**
+ * Récupère un utilisateur par son identifiant.
+ * 
+ * @async
+ * @function getById
+ * @param {string} id - L'ID technique de l'utilisateur.
+ * @returns {Promise&lt;Object>} L'utilisateur trouvé.
+ * @throws {Error} Si l'utilisateur n'existe pas.
+ */
+exports.getById = async (id) => {
+  const user = await User.findOne({ _id: id });
+  if (!user) {
+    throw new Error("utilisateur_non_trouve");
+  }
+  return user;
+};
+
+/**
+ * Ajoute un nouvel utilisateur dans le système.
+ * Vérifie que l'email n'est pas déjà utilisé.
+ * 
+ * @async
+ * @function add
+ * @param {Object} userData - Les informations de l'utilisateur (name, email, password).
+ * @returns {Promise&lt;Object>} L'utilisateur créé.
+ * @throws {Error} Si l'email est déjà utilisé.
+ */
+exports.add = async (userData) => {
+  const existingUser = await User.findOne({ email: userData.email });
+  if (existingUser) {
+    throw new Error("email_deja_existant");
+  }
+  return await User.create(userData);
+};
+
+/**
+ * Modifie les informations d'un utilisateur existant.
+ * 
+ * @async
+ * @function modify
+ * @param {string} id - L'ID de l'utilisateur à modifier.
+ * @param {Object} userData - Les données à mettre à jour (name, email, password).
+ * @returns {Promise&lt;Object>} L'utilisateur mis à jour.
+ * @throws {Error} Si l'utilisateur n'est pas trouvé ou si le nouvel email existe déjà.
+ */
+exports.modify = async (id, userData) => {
+  const user = await User.findById(id);
+
+  // If the id isnt recognized, we throw an error
+  if (!user) {
+    throw new Error("utilisateur_non_trouve");
+  }
+
+// If there is an email, and if the email isnt the same AND is not used by someone else
+  if (userData.email &amp;&amp; userData.email !== user.email) {
+    const existingUser = await User.findOne({ email: userData.email });
+    if (existingUser) {
+      throw new Error("email_deja_existant");
+    }
+    user.email = userData.email;
+  }
+
+  // If the name is given, we change it anyway
+  if (userData.name) user.name = userData.name;
+
+  // If the password is given, we change it
+  if (userData.password &amp;&amp; userData.password.trim() !== "") {
+    user.password = userData.password;
+  }
+
+  return await user.save();
+};
+
+/**
+ * Supprime un utilisateur.
+ * 
+ * @async
+ * @function delete
+ * @param {string} id - L'ID de l'utilisateur à supprimer.
+ * @returns {Promise&lt;Object>} Résultat de l'opération de suppression.
+ */
+exports.delete = async (id) => {
+  return await User.deleteOne({ _id: id });
+};
+
+/**
+ * Gère le processus d'authentification d'un utilisateur.
+ * Vérifie les identifiants et génère un token JWT.
+ * 
+ * @async
+ * @function authenticate
+ * @param {string} email - L'email de l'utilisateur.
+ * @param {string} password - Le mot de passe en clair.
+ * @returns {Promise&lt;{user: Object, token: string}>} L'utilisateur (sans mot de passe) et le token de session.
+ * @throws {Error} Si l'utilisateur est introuvable ou si le mot de passe est incorrect.
+ */
+exports.authenticate = async (email, password) => {
+  let user = await User.findOne(
+    { email: email },
+    "-__v -createdAt -updatedAt",
+  );
+
+  if (!user) {
+    throw new Error("utilisateur_non_trouve");
+  }
+
+  const isMatch = await bcrypt.compare(password, user.password);
+  
+  if (!isMatch) {
+    throw new Error("identifiants_incorrects");
+  }
+
+  delete user._doc.password;
+
+  const expireIn = 24 * 60 * 60;
+  const token = jwt.sign(
+    {
+      user: user,
+    },
+    process.env.SECRET_KEY,
+    {
+      expiresIn: expireIn,
+    },
+  );
+
+  return { user, token };
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Tutorials</h3><ul><li><a href="tutorial-glossary.html">glossary</a></li><li><a href="tutorial-maintenance.html">maintenance</a></li><li><a href="tutorial-tutorial.html">tutorial</a></li></ul><h3>Global</h3><ul><li><a href="global.html#add">add</a></li><li><a href="global.html#authenticate">authenticate</a></li><li><a href="global.html#createCatway">createCatway</a></li><li><a href="global.html#createReservation">createReservation</a></li><li><a href="global.html#delete">delete</a></li><li><a href="global.html#deleteCatway">deleteCatway</a></li><li><a href="global.html#deleteReservationForCatway">deleteReservationForCatway</a></li><li><a href="global.html#getAllCatways">getAllCatways</a></li><li><a href="global.html#getAllReservations">getAllReservations</a></li><li><a href="global.html#getAllReservationsForCatway">getAllReservationsForCatway</a></li><li><a href="global.html#getById">getById</a></li><li><a href="global.html#getCatwayById">getCatwayById</a></li><li><a href="global.html#getReservationByIdForCatway">getReservationByIdForCatway</a></li><li><a href="global.html#modify">modify</a></li><li><a href="global.html#updateCatway">updateCatway</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Fri Apr 03 2026 10:42:24 GMT+0200 (Central European Summer Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

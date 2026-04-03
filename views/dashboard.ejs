@@ -102,7 +102,13 @@
     <section>
         <h2>Gestion des Réservations</h2>
         <!-- Form to create a reservation... in this economy? -->
-        <form method="POST" onsubmit="this.action ='/catways/' + this.catwayId.value + '/reservations/'" >
+        <form method="POST" onsubmit="
+            if (new Date(this.checkIn.value) > new Date(this.checkOut.value)) {
+                alert('Erreur : La date de début ne peut pas être après la date de fin.');
+                return false;
+            }
+            this.action ='/catways/' + this.catwayId.value + '/reservations/';
+        " >
             <h3>Enregistrer une Réservation</h3>
             <input type="text" name="catwayId" placeholder="ID du Catway" required>
             <input type="text" name="clientName" placeholder="Nom Client" required>

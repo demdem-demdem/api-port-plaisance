@@ -16,12 +16,16 @@ const privateMiddleware = require("../middleware/private");
 router.get("/", privateMiddleware.checkJWT, async (req, res, next) => {
   try {
     const catways = await catwayService.getAllCatways();
-    if (req.accepts("html")) {
+    if (req.accepts(['json', 'html']) === 'html') {
       return res.render("catways_list", { catways });
     }
     res.status(200).json(catways);
   } catch (err) {
-    next(err);
+    if (req.accepts(['json', 'html']) === 'html') {
+      return next(err);
+    }
+    const status = err.message.includes("non trouvé") ? 404 : 500;
+    res.status(status).json({ error: err.message });
   }
 });
 
@@ -29,12 +33,16 @@ router.get("/", privateMiddleware.checkJWT, async (req, res, next) => {
 router.get("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
   try {
     const catway = await catwayService.getCatwayById(req.params.id);
-    if (req.accepts("html")) {
+    if (req.accepts(['json', 'html']) === 'html') {
       return res.render("catway_detail", { catway });
     }
     res.status(200).json(catway);
   } catch (err) {
-    next(err);
+    if (req.accepts(['json', 'html']) === 'html') {
+      return next(err);
+    }
+    const status = err.message.includes("non trouvé") ? 404 : 500;
+    res.status(status).json({ error: err.message });
   }
 });
 
@@ -43,20 +51,21 @@ router.post("/", privateMiddleware.checkJWT, async (req, res, next) => {
   try {
     const catway = await catwayService.createCatway(req.body);
     // IF IT ACCEPTS HTML IT REDIRECT to the dashboard with the success message
-    if (req.accepts("html")) {
+    if (req.accepts(['json', 'html']) === 'html') {
       return res.redirect("/dashboard?success=Le catway a été ajouté.");
     }
     //If not then it send the html code 201, to say its okay :D
     res.status(201).json(catway);
   } catch (err) {
     // If it accepts HTML, its returns the error message
-    if (req.accepts("html")) {
+    if (req.accepts(['json', 'html']) === 'html') {
       return res.redirect(
         `/dashboard?error=${encodeURIComponent(err.message)}`,
       );
     }
     // If not it sends the error in json
-    next(err);
+    const status = err.message.includes("déjà") ? 409 : 400;
+    res.status(status).json({ error: err.message });
   }
 });
 
@@ -66,14 +75,23 @@ router.get(
   async (req, res, next) => {
     try {
       const catway = await catwayService.getCatwayById(req.params.id);
-      res.render("modify_catway", {
-        title: "Modifier le Catway",
-        catway: catway,
-      });
+      if (req.accepts(['json', 'html']) === 'html') {
+        return res.render("modify_catway", {
+          title: "Modifier le Catway",
+          catway: catway,
+        });
+      }
+      res.status(200).json(catway);
     } catch (err) {
-      res.redirect(
-        `/dashboard?error=${encodeURIComponent("Catway non trouvé.")}`,
-      );
+      if (req.accepts(['json', 'html']) === 'html') {
+        return res.redirect(
+          `/dashboard?error=${encodeURIComponent("Catway non trouvé.")}`,
+        );
+      }
+      res.status(404).json({
+        error: "Catway non trouvé.",
+        message: err.message
+    });
     }
   },
 );
@@ -83,17 +101,18 @@ router.get(
 router.put("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
   try {
     const replaced = await catwayService.updateCatway(req.params.id, req.body);
-    if (req.accepts("html")) {
+    if (req.accepts(['json', 'html']) === 'html') {
       return res.redirect(`/dashboard?success=Le catway a été mis à jour.`);
     }
     res.status(200).json(replaced);
   } catch (err) {
-    if (req.accepts("html")) {
+    if (req.accepts(['json', 'html']) === 'html') {
       return res.redirect(
         `/dashboard?error=${encodeURIComponent(err.message)}`,
       );
     }
-    next(err);
+    const status = err.message.includes("non trouvé") ? 404 : 400;
+    res.status(status).json({ error: err.message });
   }
 });
 
@@ -103,18 +122,19 @@ router.patch("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
     const updated = await catwayService.updateCatway(req.params.id, {
       catwayState: req.body.catwayState,
     });
-    if (req.accepts("html")) {
+    if (req.accepts(['json', 'html']) === 'html') {
       return res.redirect(`/dashboard?success=Le catway a été mis à jour.`);
     }
     res.status(200).json(updated);
   } catch (err) {
     // Assuming a patch from dashboard would also redirect to dashboard
-    if (req.accepts("html")) {
+    if (req.accepts(['json', 'html']) === 'html') {
       return res.redirect(
         `/dashboard?error=${encodeURIComponent(err.message)}`,
       );
     }
-    next(err);
+    const status = err.message.includes("non trouvé") ? 404 : 400;
+    res.status(status).json({ error: err.message });
   }
 });
 
@@ -122,15 +142,16 @@ router.patch("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
 router.delete("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
   try {
     await catwayService.deleteCatway(req.params.id);
-    if (req.accepts("html")) {
+    if (req.accepts(['json', 'html']) === 'html') {
       return res.redirect("/dashboard?success=Le catway a été supprimé.");
     }
     res.status(204).send();
   } catch (err) {
-    if (req.accepts("html")) {
+    if (req.accepts(['json', 'html']) === 'html') {
       return res.redirect("/dashboard?error=Erreur de suppression.");
     }
-    next(err);
+    const status = err.message.includes("non trouvé") ? 404 : 400;
+    res.status(status).json({ error: "Erreur de suppression.", message: err.message });
   }
 });
 
@@ -143,7 +164,7 @@ router.get(
       const reservations = await reservationService.getAllReservationsForCatway(
         req.params.id,
       );
-      if (req.accepts("html")) {
+      if (req.accepts(['json', 'html']) === 'html') {
         return res.render("reservations_list", {
           reservations,
           catwayId: req.params.id,
@@ -151,7 +172,7 @@ router.get(
       }
       res.status(200).json(reservations);
     } catch (err) {
-      if (req.accepts("html")) {
+      if (req.accepts(['json', 'html']) === 'html') {
         return res.redirect("/dashboard?error=Catway non trouvé.");
       }
       next(err);
@@ -169,7 +190,7 @@ router.get(
         req.params.id,
         req.params.idReservation,
       );
-      if (req.accepts("html")) {
+      if (req.accepts(['json', 'html']) === 'html') {
         return res.render("reservation_detail", {
           reservation,
           catwayId: req.params.id,
@@ -177,7 +198,7 @@ router.get(
       }
       res.status(200).json(reservation);
     } catch (err) {
-      if (req.accepts("html")) {
+      if (req.accepts(['json', 'html']) === 'html') {
         return res.redirect("/dashboard?error=Réservation non trouvée.");
       }
       next(err);
@@ -195,12 +216,12 @@ router.post(
         req.params.id,
         req.body,
       );
-      if (req.accepts("html")) {
+      if (req.accepts(['json', 'html']) === 'html') {
         return res.redirect("/dashboard?success=La réservation a été ajoutée.");
       }
       res.status(201).json(reservation);
     } catch (err) {
-      if (req.accepts("html")) {
+      if (req.accepts(['json', 'html']) === 'html') {
         return res.redirect(
           `/dashboard?error=${encodeURIComponent(err.message)}`,
         );
@@ -220,14 +241,14 @@ router.delete(
         req.params.id,
         req.params.idReservation,
       );
-      if (req.accepts("html")) {
+      if (req.accepts(['json', 'html']) === 'html') {
         return res.redirect(
           "/dashboard?success=La réservation a été supprimée",
         );
       }
       res.status(204).send();
     } catch (err) {
-      if (req.accepts("html")) {
+      if (req.accepts(['json', 'html']) === 'html') {
         return res.redirect("/dashboard?error=Erreur de suppression.");
       }
       next(err);

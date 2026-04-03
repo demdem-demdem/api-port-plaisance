@@ -17,18 +17,19 @@ const privateMiddleware = require("../middleware/private");
 router.post("/add", privateMiddleware.checkJWT, async (req, res, next) => {
   try {
     const user = await service.add(req.body);
-    if (req.accepts("html")) {
+    if (req.accepts(['json', 'html']) === 'html') {
       return res.redirect(
         `/dashboard?success=L'utilisateur ${user.name} a été ajouté avec succès !`,
       );
     }
     res.status(201).json(user);
   } catch (err) {
-    if (req.accepts("html")) {
-      const msg = err.message === "email_already_exists" ? "Cet email est déjà enregistré." : "Erreur lors de l'ajout.";
+    if (req.accepts(['json', 'html']) === 'html') {
+      const msg = err.message === "email_deja_existant" ? "Cet email est déjà enregistré." : "Erreur lors de l'ajout.";
       return res.redirect(`/dashboard?error=${encodeURIComponent(msg)}`);
     }
-    next(err);
+    const status = err.message === "email_deja_existant" ? 409 : 400;
+    res.status(status).json({ error: err.message });
   }
 });
 
@@ -36,14 +37,21 @@ router.post("/add", privateMiddleware.checkJWT, async (req, res, next) => {
 router.get("/modify/:id", privateMiddleware.checkJWT, async (req, res, next) => {
   try {
     const user = await service.getById(req.params.id);
-    // This route is primarily for HTML rendering, but could theoretically return JSON
-    // if req.accepts('json') was checked. For now, assuming HTML only for this GET.
-    res.render("modify_user", {
-      title: "Modifier l'utilisateur",
-      user: user
-    });
+    if (req.accepts(['json', 'html']) === 'html') {
+      return res.render("modify_user", {
+        title: "Modifier l'utilisateur",
+        user: user
+      });
+    }
+    res.status(200).json(user);
   } catch (err) {
     // Redirect on error for HTML clients
+    if (req.accepts(['json', 'html']) !== 'html') {
+      return res.status(404).json({
+        error: "Utilisateur non trouvé.",
+        message: err.message
+      });
+    }
     res.redirect(`/dashboard?error=${encodeURIComponent("Utilisateur non trouvé.")}`);
   }
 });
@@ -54,18 +62,19 @@ router.get("/modify/:id", privateMiddleware.checkJWT, async (req, res, next) => 
 router.put("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
   try {
     const updatedUser = await service.modify(req.params.id, req.body);
-    if (req.accepts("html")) {
+    if (req.accepts(['json', 'html']) === 'html') {
       return res.redirect(
         `/dashboard?success=L'utilisateur ${updatedUser.name} a été mis à jour.`
       );
     }
     res.status(200).json(updatedUser);
   } catch (err) {
-    if (req.accepts("html")) {
-      const msg = err.message === "email_already_exists" ? "Cet email est déjà utilisé." : "Erreur lors de la modification.";
+    if (req.accepts(['json', 'html']) === 'html') {
+      const msg = err.message === "email_deja_existant" ? "Cet email est déjà utilisé." : "ancien_mot_de_passe_incorrect" ? "Le mot de passe actuel donné n'est pas valide" : "Erreur lors de la modification.";
       return res.redirect(`/dashboard?error=${encodeURIComponent(msg)}`);
     }
-    next(err);
+    const status = err.message === "email_deja_existant" ? 409 : 400;
+    res.status(status).json({ error: err.message });
   }
 });
 
@@ -74,12 +83,12 @@ router.delete("/:id", privateMiddleware.checkJWT, async (req, res, next) => {
   try {
     // Assuming service.delete takes ID directly from req.params.id
     await service.delete(req.params.id);
-    if (req.accepts("html")) {
+    if (req.accepts(['json', 'html']) === 'html') {
       return res.redirect(`/dashboard?success=L'utilisateur a été supprimé.`);
     }
     res.status(204).send(); // No content for successful deletion
   } catch (err) {
-    if (req.accepts("html")) {
+    if (req.accepts(['json', 'html']) === 'html') {
       return res.redirect("/dashboard?error=Erreur lors de la suppression.");
     }
     next(err);
