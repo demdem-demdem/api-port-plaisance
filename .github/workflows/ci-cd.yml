@@ -28,7 +28,7 @@ jobs:
 
     # Exemple d'exécution de tests avec les variables d'environnement
     - name: Run tests
-      run: npm test
+      run: npx mocha tests/*.test.js
       env:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
-        MONGO_URI: ${{ secrets.MONGO_URI }}
+        URL_MONGO: ${{ secrets.URL_MONGO }}
