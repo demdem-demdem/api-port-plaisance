@@ -11,7 +11,7 @@ To get started with this project, follow these steps:
 
 2. Create a env folder then add the following environment variables to your .env file:
 (note: You can create a .env.dev and .env.prod to change the variables :) )
-   ```env
+```env
 URL_MONGO=<Your MongoDB URL>
 SECRET_KEY=<secret key>
    ```
